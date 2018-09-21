@@ -8,35 +8,21 @@ import json
 import os
 
 class Weather():
-    #ok, class vars are weird in python. you wanna use self.var, but not self.var, it's self.__class__.var, or something. 
-    #I have to work tommorrow. I don't wanna deal with this. 
-    #But once i sort out these vars, everything should work
-    #Except oh yeah, there are multiple cities in the city list with the same name. So instead of getting city id based
-    #on city name, i will have to use latitude and longitude.
-    #SO, i have to find a way to use geolocation or something. 
-    #I just wanted to get the weather. 
-    #jeez
-    #JEEZ!
-    #come on.
-
-    #good luck.
-
-
     def __init__(self):
         self.module_name = "Weather"
         self.module_desc = "Get the weather for your location."
 
 
-    # Searches a LARGE list of cities to get the id of the city the user is in
-    def get_city_id(self):
-        loc = input("Location: ")
-        city_id = ''
-        with open("city_list.json", "r", encoding = 'utf-8') as city_file:
-            city_list = json.load(city_file)
-            for city in city_list:
-                if city['name'] == loc:
-                    city_id = str(city['id'])
-        return city_id
+    # Uses user IP to get a json file containing the coordinates of their location. 
+    def get_coords(self):
+        url = "http://ipinfo.io/json"
+        req = requests.get(url)
+        with open("ip_info.json", "w") as ip_file:
+            ip_file.write(req.text)
+        with open("ip_info.json", "r") as ip_file:
+            location = json.load(ip_file)
+            coords = location["loc"]
+        return coords
 
 
     # Reads an OpenWeatherMap API key from a local text file. 
@@ -51,11 +37,12 @@ class Weather():
 
     # Calls the weather website and downloads a JSON file
     def make_call(self):
-        city_id = self.get_city_id()
-        print("City ID: " + str(city_id))
+        coords = self.get_coords()
+        lat, lon = coords.split(',')
+
         api_key = self.get_api_key()
 
-        api_call = "http://api.openweathermap.org/data/2.5/weather?id=" + str(city_id) + \
+        api_call = "http://api.openweathermap.org/data/2.5/weather?lat=" + lat + "&lon=" + lon + \
                        "&APPID=" + str(api_key)
 
         res = requests.get(api_call)
@@ -102,7 +89,6 @@ class Weather():
         if time_current - time_last_call < 660:
             temp_fah = self.convert_temp()
             print("Temperature: " + "%.2f" % round(temp_fah, 2))
-            print("Less than 10 minutes have passed.")
 
         elif time_current - time_last_call >= 660:
             self.make_call()
@@ -111,7 +97,6 @@ class Weather():
 
             self.update_time()
 
-            print("More than 10 minutes have passed.")
         else:
             print("Error getting the time.")
 
