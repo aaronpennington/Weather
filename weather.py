@@ -5,6 +5,7 @@
 import time
 import requests
 import json
+import os
 
 class Weather():
     #ok, class vars are weird in python. you wanna use self.var, but not self.var, it's self.__class__.var, or something. 
@@ -117,3 +118,5 @@ class Weather():
 
 weather = Weather()
 weather.check_time()
+
+os.system("pause")
