@@ -40,9 +40,12 @@ class Weather():
 
     # Reads an OpenWeatherMap API key from a local text file. 
     def get_api_key(self):
-        with open('api_key.txt', 'r') as api_key_file:
-            api_key = api_key_file.read()
-        return api_key
+        try:
+            with open('api_key.txt', 'r') as api_key_file:
+                api_key = api_key_file.read()
+            return api_key
+        except IOError:
+            print ("Error: No API key found.")
 
 
     # Calls the weather website and downloads a JSON file
