@@ -5,7 +5,6 @@
 import time
 import requests
 import json
-import os
 
 class Weather():
     def __init__(self):
