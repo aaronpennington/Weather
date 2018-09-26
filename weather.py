@@ -12,6 +12,11 @@ class Weather():
         self.module_desc = "Get the weather for your location."
 
 
+    def get_command(self):
+        print("Please input a command.")
+        command = input("> ")
+        return command
+
     # Uses user IP to get a json file containing the coordinates of their location. 
     def get_coords(self):
         url = "http://ipinfo.io/json"
@@ -35,13 +40,14 @@ class Weather():
 
 
     # Calls the weather website and downloads a JSON file
-    def make_call(self):
+    def make_call(self, type):
         coords = self.get_coords()
         lat, lon = coords.split(',')
 
         api_key = self.get_api_key()
 
-        api_call = "http://api.openweathermap.org/data/2.5/weather?lat=" + lat + "&lon=" + lon + \
+        if (type == "weather"):
+            api_call = "http://api.openweathermap.org/data/2.5/" + type + "?lat=" + lat + "&lon=" + lon + \
                        "&APPID=" + str(api_key)
 
         res = requests.get(api_call)
@@ -63,7 +69,7 @@ class Weather():
 
 
     # Converts temperature from Kelvin to Fahrenheit
-    def convert_temp(self):
+    def convert_temp(self, temp_kel):
         temp_kel = self.read_weather()
         temp_fah = (temp_kel * 1.8) - 459.67
         return temp_fah
@@ -79,7 +85,8 @@ class Weather():
 
     # Compare the time at last API call to the current time. If less than 10 min have passed, use last
     # weather info. 
-    def check_time(self):
+    def check_time(self, type):
+
         file_time = open('time.txt', 'r+')
         time_last_call = float(file_time.read())
         time_current = time.time()
@@ -90,8 +97,8 @@ class Weather():
             print("Temperature: " + "%.2f" % round(temp_fah, 2))
 
         elif time_current - time_last_call >= 660:
-            self.make_call()
-            temp_fah = self.convert_temp()
+            temp_kel = self.make_call(type)
+            temp_fah = self.convert_temp(temp_kel)
             print("Temperature: " + "%.2f" % round(temp_fah, 2))
 
             self.update_time()
@@ -100,7 +107,20 @@ class Weather():
             print("Error getting the time.")
 
 
+    def parse_command(self, command):
+        if (command == "weather"):
+            t = "weather"
+            self.check_time(t)
+        elif (command == "hourly"):
+            t = "forecast"
+        elif (command == "daily"):
+            t = "forecast/daily"
+        else:
+            print("Command unable to be parsed.")
+            self.get_command()
+
+
 weather = Weather()
-weather.check_time()
+weather.parse_command(weather.get_command())
 
 input("Press ENTER to exit.")
