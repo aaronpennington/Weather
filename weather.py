@@ -20,12 +20,19 @@ class Weather():
     # Uses user IP to get a json file containing the coordinates of their location. 
     def get_coords(self):
         url = "http://ipinfo.io/json"
-        req = requests.get(url)
+
+        try:
+            req = requests.get(url)
+        except:
+            print("Unable to connect to Internet.")
+            input("Press ENTER to exit.")
+
         with open("ip_info.json", "w+") as ip_file:
             ip_file.write(req.text)
         with open("ip_info.json", "r+") as ip_file:
             location = json.load(ip_file)
             coords = location["loc"]
+
         return coords
 
 
@@ -40,7 +47,7 @@ class Weather():
 
 
     # Calls the weather website and downloads a JSON file
-    def make_call(self, type):
+    def call_weather(self, type):
         coords = self.get_coords()
         lat, lon = coords.split(',')
 
@@ -77,10 +84,16 @@ class Weather():
 
     # Updates the time at last API call. Sets the value to the current time.
     def update_time(self):
-            up_time = open('time.txt', 'w+')
-            new_time = time.time()
-            up_time.write(str(new_time))
-            up_time.close()
+        up_time = open('time.txt', 'w+')
+        new_time = time.time()
+        up_time.write(str(new_time))
+        up_time.close()
+
+
+    def get_time(self):
+        with open("time.txt", "r+") as t_file:
+            time_updated = float(t_file.read())
+        return time.strftime('%m/%d/%Y %H:%M:%S',  time.gmtime(time_updated/1000.))
 
 
     # Compare the time at last API call to the current time. If less than 10 min have passed, use last
@@ -93,11 +106,12 @@ class Weather():
         file_time.close()
 
         if time_current - time_last_call < 660:
-            temp_fah = self.convert_temp()
+            temp_kel = self.read_weather()
+            temp_fah = self.convert_temp(temp_kel)
             print("Temperature: " + "%.2f" % round(temp_fah, 2))
 
         elif time_current - time_last_call >= 660:
-            temp_kel = self.make_call(type)
+            temp_kel = self.call_weather(type)
             temp_fah = self.convert_temp(temp_kel)
             print("Temperature: " + "%.2f" % round(temp_fah, 2))
 
@@ -106,7 +120,10 @@ class Weather():
         else:
             print("Error getting the time.")
 
+        print("Last updated: " + self.get_time())
 
+
+    # If/Else statements for various user commands (current, hourly, or daily forecast)
     def parse_command(self, command):
         if (command == "weather"):
             t = "weather"
