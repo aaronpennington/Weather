@@ -93,7 +93,7 @@ class Weather():
     def get_time(self):
         with open("time.txt", "r+") as t_file:
             time_updated = float(t_file.read())
-        return time.strftime('%m/%d/%Y %H:%M:%S',  time.gmtime(time_updated/1000.))
+        return time.strftime('%m/%d/%Y %H:%M:%S',  time.gmtime(time_updated))
 
 
     # Compare the time at last API call to the current time. If less than 10 min have passed, use last
