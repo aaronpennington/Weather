@@ -11,7 +11,7 @@ class Weather():
         self.module_name = "Weather"
         self.module_desc = "Get the weather for your location."
 
-
+    # Requests input from user
     def get_command(self):
         print("Please input a command.")
         command = input("> ")
@@ -138,6 +138,6 @@ class Weather():
 
 
 weather = Weather()
-weather.parse_command(weather.get_command())
+weather.parse_command("weather")
 
 input("Press ENTER to exit.")
