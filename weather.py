@@ -66,27 +66,33 @@ class Weather():
             res.raise_for_status()
         except Exception as exc:
             print('There was a problem: %s' % exc)
+        print("RES: " + res.text)
 
-        with open('weather.json', 'r') as wf:
-            w_data = wf.read()
-            w_json = json.loads(w_data)
+        return res
 
-            if (type == "weather"):
-                w_json['current'] = res.text
-            elif (type == "hourly"):
-                w_json['hourly'] = res.text
+        #with open('weather.json', 'r') as wf:
+        #    w_data = wf.read()
+        #    w_json = json.loads(w_data)
 
-        with open('weather.json', 'w+') as weather_file:
-            weather_file.write(json.dumps(w_json, indent = 4))
+        #    if (type == "weather"):
+        #        w_json['current'] = res.text
+        #    elif (type == "hourly"):
+        #        w_json['hourly'] = res.text
+
+        #with open('weather.json', 'w') as weather_file:
+        #    json.dump(w_json, weather_file)
 
 
     # Opens the weather JSON file and returns the temp
-    def read_weather(self):
-        with open('weather.json', 'r') as wf:
-            w_json = json.load(wf)
-        
-            temp_kel = float(w_json['current']['main']['temp'])
-        return temp_kel
+    def read_weather(self, res):
+        #with open('weather.json', 'r') as wf:
+        #    data = wf.read()
+        #    w_json = json.loads(data)
+        #    current = w_json['current']
+
+        j = json.loads(res.text)
+        temperature = j['main']['temp']
+        return temperature 
 
 
     # Opens weather JSON file and returns the forecast
@@ -106,8 +112,8 @@ class Weather():
 
 
     # Converts temperature from Kelvin to Fahrenheit
-    def convert_temp(self, temp_kel):
-        temp_kel = self.read_weather()
+    def convert_temp(self, temp_kel, res):
+        temp_kel = self.read_weather(res)
         temp_fah = (temp_kel * 1.8) - 459.67
         return temp_fah
 
@@ -130,7 +136,8 @@ class Weather():
     def get_time(self):
         with open("time.txt", "r+") as t_file:
             time_updated = float(t_file.read())
-        return convert_date(time_updated)
+        cd = self.convert_date(time_updated)
+        return cd
 
 
     # Compare the time at last API call to the current time. If less than 10 min have passed, use last
@@ -143,16 +150,18 @@ class Weather():
         file_time.close()
 
         if time_current - time_last_call < 660:
-            temp_kel = self.read_weather()
-            temp_fah = self.convert_temp(temp_kel)
+            api_call = self.call_weather(type)
+            res = self.make_call(api_call, type)
+            temp_kel = self.read_weather(res)
+            temp_fah = self.convert_temp(temp_kel, res)
             print("Temperature: " + "%.2f" % round(temp_fah, 2))
 
         elif time_current - time_last_call >= 660:
             api_call = self.call_weather(type)
-            self.make_call(api_call, type)
+            res = self.make_call(api_call, type)
 
-            temp_kel = self.read_weather()
-            temp_fah = self.convert_temp(temp_kel)
+            temp_kel = self.read_weather(res)
+            temp_fah = self.convert_temp(temp_kel, res)
             print("Temperature: " + "%.2f" % round(temp_fah, 2))
 
             self.update_time()
