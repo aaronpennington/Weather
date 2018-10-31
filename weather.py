@@ -66,54 +66,36 @@ class Weather():
             res.raise_for_status()
         except Exception as exc:
             print('There was a problem: %s' % exc)
-        print("RES: " + res.text)
 
         return res
-
-        #with open('weather.json', 'r') as wf:
-        #    w_data = wf.read()
-        #    w_json = json.loads(w_data)
-
-        #    if (type == "weather"):
-        #        w_json['current'] = res.text
-        #    elif (type == "hourly"):
-        #        w_json['hourly'] = res.text
-
-        #with open('weather.json', 'w') as weather_file:
-        #    json.dump(w_json, weather_file)
 
 
     # Opens the weather JSON file and returns the temp
     def read_weather(self, res):
-        #with open('weather.json', 'r') as wf:
-        #    data = wf.read()
-        #    w_json = json.loads(data)
-        #    current = w_json['current']
-
         j = json.loads(res.text)
         temperature = j['main']['temp']
         return temperature 
 
 
     # Opens weather JSON file and returns the forecast
-    def read_forecast(self):
-        with open('weather.json', 'r+') as weather_file:
-            weather = json.load(weather_file)
-        forecast = weather['hourly']['list']
-        for forecast in weather:
-            date = forecast['dt']
-            temp = forecast['main']['temp']
+    def read_forecast(self, res):
+        weather = json.loads(res.text)
+        forecast = weather['list']
+        for x in range(0,8):
+            date = forecast[x]['dt']
+            temp = forecast[x]['main']['temp']
             
-            d = convert_date(date)
-            t = convert_temp(temp)
+            d = self.convert_date(float(date))
+            t = self.convert_temp(temp)
 
-            print("Date: " + d + "\nTemperature: " + t)
+            print("Date: " + str(d) + "\nTemperature: " + str(t))
             print("")
+            
+            x += 1
 
 
     # Converts temperature from Kelvin to Fahrenheit
-    def convert_temp(self, temp_kel, res):
-        temp_kel = self.read_weather(res)
+    def convert_temp(self, temp_kel):
         temp_fah = (temp_kel * 1.8) - 459.67
         return temp_fah
 
@@ -143,40 +125,41 @@ class Weather():
     # Compare the time at last API call to the current time. If less than 10 min have passed, use last
     # weather info. 
     def check_time(self, type):
-
         file_time = open('time.txt', 'r+')
         time_last_call = float(file_time.read())
         time_current = time.time()
         file_time.close()
 
+
+
         if time_current - time_last_call < 660:
             api_call = self.call_weather(type)
             res = self.make_call(api_call, type)
-            temp_kel = self.read_weather(res)
-            temp_fah = self.convert_temp(temp_kel, res)
-            print("Temperature: " + "%.2f" % round(temp_fah, 2))
 
         elif time_current - time_last_call >= 660:
             api_call = self.call_weather(type)
             res = self.make_call(api_call, type)
-
-            temp_kel = self.read_weather(res)
-            temp_fah = self.convert_temp(temp_kel, res)
-            print("Temperature: " + "%.2f" % round(temp_fah, 2))
 
             self.update_time()
 
         else:
             print("Error getting the time.")
 
+        if type == "weather":
+            temp_kel = self.read_weather(res)
+            temp_fah = self.convert_temp(temp_kel)
+            print("Temperature: " + "%.2f" % round(temp_fah, 2))
+        elif type == "forecast":
+            temp_kel = self.read_forecast(res)
+
         print("Last updated: " + self.get_time())
 
 
     # If/Else statements for various user commands (current, hourly, or daily forecast)
     def parse_command(self, command):
-        if (command == "weather"):
+        if command == "weather" or command == "w" or command == "current" or command == "c":
             t = "weather"
-        elif (command == "hourly"):
+        elif command == "hourly" or command == "forecast" or command == "h" or command == "f":
             t = "forecast"
         else:
             print("Command unable to be parsed.")
