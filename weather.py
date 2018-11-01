@@ -80,18 +80,32 @@ class Weather():
     # Opens weather JSON file and returns the forecast
     def read_forecast(self, res):
         weather = json.loads(res.text)
-        forecast = weather['list']
-        for x in range(0,8):
-            date = forecast[x]['dt']
-            temp = forecast[x]['main']['temp']
-            
-            d = self.convert_date(float(date))
-            t = self.convert_temp(temp)
+        t_list = []
+        num = 0
 
-            print("Date: " + str(d) + "\nTemperature: " + str(t))
-            print("")
-            
-            x += 1
+        for day in weather['list']:
+            date = day['dt']
+            temp = day['main']['temp']
+
+            d = self.convert_date(float(date))
+            t = self.convert_temp(temp) # Truncate the temperatures to 1 or 2 decimal places. 
+
+            if num < 7:
+                t_list.append(t)
+                num += 1
+            elif num == 7:
+                t_list.append(t)
+                self.sort_list(t_list)
+                high = t_list[len(t_list) - 1]
+                low = t_list[0]
+
+                print("Date: " + d)
+                print("High: " + str(high))
+                print("Low: " + str(low))
+                print("")
+
+                num = 0
+                t_list = []
 
 
     # Converts temperature from Kelvin to Fahrenheit
@@ -104,6 +118,21 @@ class Weather():
     def convert_date(self, date):
         new_date = time.strftime('%m/%d/%Y %H:%M:%S',  time.gmtime(date))
         return new_date
+
+
+    # Bubble Sort Algorithm
+    # Source: https://github.com/TheAlgorithms/Python/blob/master/sorts/bubble_sort.py
+    def sort_list(self, t_list):
+        length = len(t_list)
+        for i in range(length-1):
+            swapped = False
+            for j in range(length-1-i):
+                if t_list[j] > t_list[j+1]:
+                    swapped = True
+                    t_list[j], t_list[j+1] = t_list[j+1], t_list[j]
+            if not swapped: break
+
+        return t_list
 
 
     # Updates the time at last API call. Sets the value to the current time.
@@ -130,8 +159,8 @@ class Weather():
         time_current = time.time()
         file_time.close()
 
-
-
+        # NOTE: This statement may be obselete. Okay, it __is__ obsolete. All the time checking
+        # functions here can be removed. I'm just too scared to do so. 
         if time_current - time_last_call < 660:
             api_call = self.call_weather(type)
             res = self.make_call(api_call, type)
