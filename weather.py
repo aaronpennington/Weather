@@ -5,6 +5,7 @@
 import time
 import requests
 import json
+import math
 
 class Weather():
     def __init__(self):
@@ -111,7 +112,8 @@ class Weather():
     # Converts temperature from Kelvin to Fahrenheit
     def convert_temp(self, temp_kel):
         temp_fah = (temp_kel * 1.8) - 459.67
-        return temp_fah
+        temp_fah = math.ceil(temp_fah)
+        return int(temp_fah)
 
 
     # Converts a Unix Epoch timestamp into human readable format
@@ -177,7 +179,7 @@ class Weather():
         if type == "weather":
             temp_kel = self.read_weather(res)
             temp_fah = self.convert_temp(temp_kel)
-            print("Temperature: " + "%.2f" % round(temp_fah, 2))
+            print("Temperature: " + str(temp_fah))
         elif type == "forecast":
             temp_kel = self.read_forecast(res)
 
