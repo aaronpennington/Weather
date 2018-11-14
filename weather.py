@@ -10,16 +10,21 @@ import sys
 from PyQt5 import QtWidgets
 from mainwindow import Ui_MainWindow
 
+
+# TO DO
+# 1. Restructure weather class. Some of the functions are outdated. Others are obtuse or unclear. 
+#    There should be two functions which return the current weather as an int and the forecast as
+#    a list, respectively. 
+# 2. Remove the command parsing. The gui makes this unnecessary. 
+# 3. Remove the time checking. It's now unused because of how the api calls are made. 
+# 4. Determine a way to insert the actual weather data into the gui labels. 
+# 5. Remove this todo list. :)
+
 class Weather():
     def __init__(self):
         self.module_name = "Weather"
         self.module_desc = "Get the weather for your location."
 
-    # Requests input from user
-    def get_command(self):
-        print("Please input a command.")
-        command = input("> ")
-        return command
 
     # Uses user IP to get a json file containing the coordinates of their location. 
     def get_coords(self):
@@ -85,6 +90,7 @@ class Weather():
     def read_forecast(self, res):
         weather = json.loads(res.text)
         t_list = []
+        t_dict = dict()
         num = 0
 
         for day in weather['list']:
@@ -92,7 +98,7 @@ class Weather():
             temp = day['main']['temp']
 
             d = self.convert_date(float(date))
-            t = self.convert_temp(temp) # Truncate the temperatures to 1 or 2 decimal places. 
+            t = self.convert_temp(temp)
 
             if num < 7:
                 t_list.append(t)
@@ -102,15 +108,16 @@ class Weather():
                 self.sort_list(t_list)
                 high = t_list[len(t_list) - 1]
                 low = t_list[0]
+                temps = []
 
-                print("Date: " + d)
-                print("High: " + str(high))
-                print("Low: " + str(low))
-                print("")
+                temps.append(high)
+                temps.append(low)
+                t_dict[d] = temps
 
                 num = 0
                 t_list = []
 
+        return t_dict
 
     # Converts temperature from Kelvin to Fahrenheit
     def convert_temp(self, temp_kel):
@@ -156,52 +163,37 @@ class Weather():
         return cd
 
 
-    # Compare the time at last API call to the current time. If less than 10 min have passed, use last
-    # weather info. 
-    def check_time(self, type):
-        file_time = open('time.txt', 'r+')
-        time_last_call = float(file_time.read())
-        time_current = time.time()
-        file_time.close()
+    def get_current(self):
+        current_api_call = self.call_weather("weather")
+        current_res = self.make_call(current_api_call, "weather")
+        current_temp_kelvin = self.read_weather(current_res)
+        current_temp_fahrenheit = self.convert_temp(current_temp_kelvin)
+        return current_temp_fahrenheit
 
 
-        # NOTE: This statement may be obselete. Okay, it __is__ obsolete. All the time checking
-        # functions here can be removed. I'm just too scared to do so. 
-        if time_current - time_last_call < 660:
-            api_call = self.call_weather(type)
-            res = self.make_call(api_call, type)
-
-        elif time_current - time_last_call >= 660:
-            api_call = self.call_weather(type)
-            res = self.make_call(api_call, type)
-
-            self.update_time()
-
-        else:
-            print("Error getting the time.")
-
-        if type == "weather":
-            temp_kel = self.read_weather(res)
-            temp_fah = self.convert_temp(temp_kel)
-            print("Temperature: " + str(temp_fah))
-            return temp_fah
-        elif type == "forecast":
-            temp_kel = self.read_forecast(res)
-
-        print("Last updated: " + self.get_time())
+    def get_forecast(self):
+        forecast_api_call = self.call_weather("forecast")
+        forecast_res = self.make_call(forecast_api_call, "forecast")
+        forecast_list = self.read_forecast(forecast_res)
+        print(str(forecast_list))
 
 
-    # If/Else statements for various user commands (current, hourly, or daily forecast)
-    def parse_command(self, command):
-        if command == "weather" or command == "w" or command == "current" or command == "c":
-            t = "weather"
-        elif command == "hourly" or command == "forecast" or command == "h" or command == "f":
-            t = "forecast"
-        else:
-            print("Command unable to be parsed.")
-            self.get_command()
+    # Compare the time at last API call to the current time.
+    def get_weather(self):
+        current_api_call = self.call_weather("weather")
+        forecast_api_call = self.call_weather("forecast")
 
-        self.check_time(t)
+        current_res = self.make_call(current_api_call, "weather")
+        forecast_res = self.make_call(forecast_api_call, "forecast")
+
+        current_temp_kelvin = self.read_weather(current_res)
+        current_temp_fahrenheit = self.convert_temp(current_temp_kelvin)
+
+        forecast_list = self.read_forecast(forecast_res)
+        
+
+
+
 
 
 class ApplicationWindow(QtWidgets.QMainWindow):
@@ -212,16 +204,20 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui.setupUi(self)
 
 
+    def updateLabel(self, cw):
+        self.ui.updateLabel(cw)
+
+
 def main():
     weather = Weather()
+    cw = weather.get_current()
+    fw = weather.get_forecast()
     app = QtWidgets.QApplication(sys.argv)
     application = ApplicationWindow()
+    application.updateLabel(cw)
     application.show()
     sys.exit(app.exec_())
 
 
 if __name__ == "__main__":
     main()
-
-
-#input("Press ENTER to exit.")

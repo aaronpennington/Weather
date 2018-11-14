@@ -186,6 +186,20 @@ class Ui_MainWindow(object):
         self.label_12.setText(_translate("MainWindow", "50"))
 
 
+    def updateLabel(self, current_weather):
+        #self.label_3.setText(forecast_list[0])
+        #self.label_4.setText()
+        #self.label_5.setText()
+        #self.label_6.setText()
+        #self.label_7.setText()
+        #self.label_8.setText()
+        #self.label_9.setText()
+        #self.label_10.setText()
+        #self.label_11.setText()
+        #self.label_12.setText()
+        self.lcdNumber.display(current_weather)
+
+
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
