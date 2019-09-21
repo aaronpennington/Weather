@@ -1,6 +1,9 @@
+# -*- coding: utf-8 -*-
+
 # WEATHER.PY
 # AUTHOR: AARON PENNINGTON
-# A nifty program that displays the current temperature and a five day weather forecast!
+# A nifty program that displays the current temperature and a five day weather
+# forecast!
 # https://www.github.com/aaronpennington/Weather
 
 import time
@@ -10,6 +13,9 @@ import math
 import sys
 from PyQt5 import QtWidgets
 from mainwindow import Ui_MainWindow
+from pathlib import Path
+
+path = Path(__file__).parent.absolute()
 
 
 class Weather():
@@ -17,8 +23,8 @@ class Weather():
         self.module_name = "Weather"
         self.module_desc = "Get the weather for your location."
 
-
-    # Uses user IP to get a json file containing the coordinates of their location. 
+    # Uses user IP to get a json file containing the coordinates of their
+    # location.
     def get_coords(self):
         url = "http://ipinfo.io/json"
 
@@ -36,31 +42,32 @@ class Weather():
 
         return coords
 
+    # Reads an OpenWeatherMap API key from a local text file.
 
-    # Reads an OpenWeatherMap API key from a local text file. 
     def get_api_key(self):
         try:
-            with open('api_key.txt', 'r') as api_key_file:
+            with open(str(path) + '/api_key.txt', 'r') as api_key_file:
                 api_key = api_key_file.read()
             return api_key
         except IOError:
-            print ("Error: No API key found.")
-
+            print("Error: No API key found.")
 
     # Creates the url for the API call depending on the user command
+
     def call_weather(self, type):
         coords = self.get_coords()
         lat, lon = coords.split(',')
 
         api_key = self.get_api_key()
 
-        api_call = "http://api.openweathermap.org/data/2.5/" + type + "?lat=" + lat + "&lon=" + lon + \
-                   "&APPID=" + str(api_key)
+        api_call = "http://api.openweathermap.org/data/2.5/" + type + \
+            "?lat=" + lat + "&lon=" + lon + \
+            "&APPID=" + str(api_key)
 
         return api_call
 
-
     # Requests the weather json from openweathermap.org
+
     def make_call(self, api_call, type):
         res = requests.get(api_call)
         try:
@@ -70,15 +77,15 @@ class Weather():
 
         return res
 
-
     # Opens the weather JSON file and returns the temp
+
     def read_weather(self, res):
         j = json.loads(res.text)
         temperature = j['main']['temp']
-        return temperature 
-
+        return temperature
 
     # Opens weather JSON file and returns the forecast
+
     def read_forecast(self, res):
         weather = json.loads(res.text)
         t_list = []
@@ -103,21 +110,27 @@ class Weather():
                 self.sort_list(t_list)
 
                 temps = []
-                temps.append(t_list[len(t_list) - 1]) # HIGH
-                temps.append(t_list[0]) # LOW
+                temps.append(t_list[len(t_list) - 1])  # HIGH
+                temps.append(t_list[0])  # LOW
 
                 t_dict[last_date] = temps
                 t_list.clear()
 
-            # This next bit is kind of obtuse. And ugly. And probably wasn't the best way to 
-            # solve the problem. But it "works". So I'm keeping it. Feel free to make it work 
-            # better. 
+            # This next bit is kind of obtuse. And ugly. And probably wasn't
+            # the best way to
+            # solve the problem. But it "works". So I'm keeping it. Feel free
+            # to make it work
+            # better.
             #
-            # The problem, btw, is that the elif statement above works up until the last day
-            # in the forecast. Once it reaches the very end of the list, the statement checks
-            # if the temperature before (x-1) was on the same day as itself (x). And because 
-            # x and x-1 are on the same date for the last temperature, it just doesn't work. 
-            # 
+            # The problem, btw, is that the elif statement above works up
+            # until the last day
+            # in the forecast. Once it reaches the very end of the list, the
+            # statement checks
+            # if the temperature before (x-1) was on the same day as itself (x)
+            # And because
+            # x and x-1 are on the same date for the last temperature, it just
+            # doesn't work.
+            #
             # Does that make sense? No. No it does not. Sorry.
             elif x == 37:
                 t_list.append(t)
@@ -125,15 +138,15 @@ class Weather():
                 self.sort_list(t_list)
 
                 temps = []
-                temps.append(t_list[len(t_list) - 1]) # HIGH
-                temps.append(t_list[0]) # LOW
+                temps.append(t_list[len(t_list) - 1])  # HIGH
+                temps.append(t_list[0])  # LOW
 
                 t_dict[last_date] = temps
                 t_list.clear()
 
             else:
                 t_list.append(t)
-            
+
             x += 1
 
         return t_dict
@@ -144,16 +157,17 @@ class Weather():
         temp_fah = math.ceil(temp_fah)
         return int(temp_fah)
 
-
     # Converts a Unix Epoch timestamp into human readable format
+
     def convert_date(self, date):
         new_date = time.strftime('%m/%d/%Y',  time.gmtime(date))
-        # %m/%d/%Y %H:%M:%S  <--- Gives a full time string. 
+        # %m/%d/%Y %H:%M:%S  <--- Gives a full time string.
         return new_date
 
-
     # Bubble Sort Algorithm
-    # Source: https://github.com/TheAlgorithms/Python/blob/master/sorts/bubble_sort.py
+    # Source: https://github.com/TheAlgorithms/Python/blob/master/sorts/
+    # bubble_sort.py
+
     def sort_list(self, t_list):
         length = len(t_list)
         for i in range(length-1):
@@ -162,12 +176,14 @@ class Weather():
                 if t_list[j] > t_list[j+1]:
                     swapped = True
                     t_list[j], t_list[j+1] = t_list[j+1], t_list[j]
-            if not swapped: break
+            if not swapped:
+                break
 
         return t_list
 
+    # Reads the unix epoch time from time.txt file, and converts it to a
+    # readable format
 
-    # Reads the unix epoch time from time.txt file, and converts it to a readable format
     def get_time(self):
         with open("time.txt", "r+") as t_file:
             time_updated = float(t_file.read())
@@ -182,13 +198,14 @@ class Weather():
         current_temp_fahrenheit = self.convert_temp(current_temp_kelvin)
         return current_temp_fahrenheit
 
-    # Gets a list of dates and high/low temperatures for each day of a five-day forecast. 
+    # Gets a list of dates and high/low temperatures for each day of a
+    # five-day forecast.
     def get_forecast(self):
         forecast_api_call = self.call_weather("forecast")
         forecast_res = self.make_call(forecast_api_call, "forecast")
         forecast_list = self.read_forecast(forecast_res)
         return forecast_list
-        
+
 
 class ApplicationWindow(QtWidgets.QMainWindow):
     def __init__(self):
@@ -196,7 +213,6 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-
 
     def updateLabel(self, cw, t_dict):
         self.ui.updateLabel(cw, t_dict)
