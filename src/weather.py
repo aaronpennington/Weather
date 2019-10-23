@@ -74,7 +74,6 @@ class Weather():
             res.raise_for_status()
         except Exception as exc:
             print('There was a problem: %s' % exc)
-
         return res
 
     # Opens the weather JSON file and returns the temp
@@ -82,7 +81,8 @@ class Weather():
     def read_weather(self, res):
         j = json.loads(res.text)
         temperature = j['main']['temp']
-        return temperature
+        city = j['name']
+        return temperature, city
 
     # Opens weather JSON file and returns the forecast
 
@@ -194,9 +194,9 @@ class Weather():
     def get_current(self):
         current_api_call = self.call_weather("weather")
         current_res = self.make_call(current_api_call, "weather")
-        current_temp_kelvin = self.read_weather(current_res)
+        current_temp_kelvin, city = self.read_weather(current_res)
         current_temp_fahrenheit = self.convert_temp(current_temp_kelvin)
-        return current_temp_fahrenheit
+        return current_temp_fahrenheit, city
 
     # Gets a list of dates and high/low temperatures for each day of a
     # five-day forecast.
@@ -214,17 +214,17 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-    def updateLabel(self, cw, t_dict):
-        self.ui.updateLabel(cw, t_dict)
+    def updateLabel(self, cw, t_dict, city):
+        self.ui.updateLabel(cw, t_dict, city)
 
 
 def main():
     weather = Weather()
-    cw = weather.get_current()
+    cw, city = weather.get_current()
     fw = weather.get_forecast()
     app = QtWidgets.QApplication(sys.argv)
     application = ApplicationWindow()
-    application.updateLabel(cw, fw)
+    application.updateLabel(cw, fw, "Rexburg")
     application.show()
     sys.exit(app.exec_())
 

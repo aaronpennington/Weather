@@ -8,6 +8,7 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("Weather")
@@ -156,6 +157,15 @@ class Ui_MainWindow(object):
         self.label_12.setAlignment(QtCore.Qt.AlignCenter)
         self.label_12.setObjectName("label_12")
         self.gridLayout.addWidget(self.label_12, 4, 2, 1, 1)
+        self.label_13 = QtWidgets.QLabel(self.centralwidget)
+        self.label_13.setGeometry(QtCore.QRect(220, 500, 311, 81))
+        font = QtGui.QFont()
+        font.setPointSize(11)
+        font.setBold(True)
+        font.setWeight(75)
+        self.label_13.setFont(font)
+        self.label_13.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_13.setObjectName("label_13")
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
@@ -184,9 +194,9 @@ class Ui_MainWindow(object):
         self.label_18.setText(_translate("MainWindow", "Date"))
         self.label_11.setText(_translate("MainWindow", "50"))
         self.label_12.setText(_translate("MainWindow", "50"))
+        self.label_13.setText(_translate("MainWindow", "Location: CITY"))
 
-
-    def updateLabel(self, current_weather, t_dict):
+    def updateLabel(self, current_weather, t_dict, city):
         forecast_list = []
         date_list = []
         for d in t_dict:
@@ -213,6 +223,8 @@ class Ui_MainWindow(object):
 
         self.lcdNumber.display(current_weather)
 
+        self.label_13.setText("Location: " + city)
+
 
 if __name__ == "__main__":
     import sys
@@ -222,4 +234,3 @@ if __name__ == "__main__":
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
-
