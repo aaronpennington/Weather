@@ -5,7 +5,7 @@ In order to use this application, you will need an API key from openweathermap. 
 Once you have the key, create a text file in the same directory as this program, title the file "api_key.txt", and copy your key to the file. 
 Run the python file using the command line or your prefered method.
 You will be asked to enter a command. To get the current weather, enter "current". To get a forecast, enter "forecast".
-![Here is an example:](https://github.com/aaronpennington/Weather/blob/master/weather.png)
+![Here is an example:](https://github.com/aaronpennington/Weather/blob/master/03_17_2020_screenshot.png)
 ## Additional Info
 This project could use a lot of work. There are certain aspects that need improving. Feel free to take a look and help out any way you want! In particular, I would like to see the following: 
 
