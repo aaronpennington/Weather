@@ -82,6 +82,7 @@ class Weather():
         j = json.loads(res.text)
         temperature = j['main']['temp']
         city = j['name']
+        #print(city)
         return temperature, city
 
     # Opens weather JSON file and returns the forecast
@@ -224,7 +225,7 @@ def main():
     fw = weather.get_forecast()
     app = QtWidgets.QApplication(sys.argv)
     application = ApplicationWindow()
-    application.updateLabel(cw, fw, "Rexburg")
+    application.updateLabel(cw, fw, city)
     application.show()
     sys.exit(app.exec_())
 
