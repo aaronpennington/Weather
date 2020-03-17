@@ -1,4 +1,6 @@
 ip_info.json
+.vs/
+.vscode/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
